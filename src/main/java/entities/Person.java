@@ -7,6 +7,7 @@ package entities;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -14,14 +15,18 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
  * @author Tweny
  */
 @Entity
+@NamedQuery(name = "Person.deleteAllRows", query = "DELETE from Person")
 public class Person implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -31,6 +36,11 @@ public class Person implements Serializable {
     
     private String first_name;
     private String last_name;
+    private String phone;
+    @Temporal(TemporalType.DATE)
+    private Date created;
+    @Temporal(TemporalType.DATE)
+    private Date lastEdited;
     
     //***************One to One****************
     //CascadeType.PERSIST = Dette gør at vi ikke behøver pasister en adresse først, men systemet gør det selv, hvis Person indholder en adresse
@@ -101,12 +111,28 @@ public class Person implements Serializable {
     public Person() {
     }
 
-    public Person(String first_name, String last_name) {
+    public Person(String first_name, String last_name, String phone) {
         this.first_name = first_name;
         this.last_name = last_name;
+        this.phone = phone;
+        this.created = new Date();
+        this.lastEdited = new Date();
         this.fees = new ArrayList<Fee>();
         this.swimStyles = new ArrayList<SwimStyle>();
     }
+
+    public Person(int id, String first_name, String last_name, String phone) {
+        this.id = id;
+        this.first_name = first_name;
+        this.last_name = last_name;
+        this.phone = phone;
+        this.created = new Date();
+        this.lastEdited = new Date();
+        this.fees = new ArrayList<Fee>();
+        this.swimStyles = new ArrayList<SwimStyle>();
+    }
+    
+    
     
     public int getId() {
         return id;
@@ -128,10 +154,20 @@ public class Person implements Serializable {
         this.last_name = last_name;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     @Override
     public String toString() {
-        return "Person{" + "id=" + id + ", first_name=" + first_name + ", last_name=" + last_name + ", address=" + address + ", fees=" + fees + '}';
+        return "Person{" + "id=" + id + ", first_name=" + first_name + ", last_name=" + last_name + ", phone=" + phone + ", created=" + created + ", lastEdited=" + lastEdited + ", address=" + address + ", fees=" + fees + ", swimStyles=" + swimStyles + '}';
     }
+
+   
 
    
 
