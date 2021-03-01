@@ -8,6 +8,7 @@ package rest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dtos.PersonDTO;
+import entities.Person;
 import facades.PersonFacade;
 import java.util.List;
 import javax.persistence.EntityManagerFactory;
@@ -97,9 +98,11 @@ public class PersonResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response editPerson(String person) {
+    public Response editPerson(@PathParam("id") int id, String person) {
         //System.out.println(person);
-        PersonDTO personDTO = GSON.fromJson(person, PersonDTO.class); //manual conversion
+        PersonDTO personDTOEditInfo = GSON.fromJson(person, PersonDTO.class); //manual conversion
+        Person personToEdit = new Person(id, personDTOEditInfo.getFirstName(), personDTOEditInfo.getLastName(), personDTOEditInfo.getPhone());
+        PersonDTO personDTO = new PersonDTO(personToEdit);
         personDTO = FACADE.editPerson(personDTO);
         return Response.ok(personDTO).build();
     }

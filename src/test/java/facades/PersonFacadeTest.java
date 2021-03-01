@@ -26,8 +26,8 @@ public class PersonFacadeTest {
     
     private static EntityManagerFactory EMF;
     private static PersonFacade FACADE;
-    Person person1 ;
-    Person person2 ;
+    Person person1;
+    Person person2;
 
     public PersonFacadeTest() {
     }
@@ -55,7 +55,6 @@ public class PersonFacadeTest {
             em.createNamedQuery("Person.deleteAllRows").executeUpdate();
             em.persist(person1);
             em.persist(person2);
-
             em.getTransaction().commit();
         } finally {
             em.close();

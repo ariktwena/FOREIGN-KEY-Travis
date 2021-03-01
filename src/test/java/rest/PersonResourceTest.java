@@ -5,12 +5,17 @@
  */
 package rest;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import dtos.PersonDTO;
 import entities.Person;
 import entities.RenameMe;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
 import io.restassured.parsing.Parser;
+import io.restassured.response.Response;
 import java.net.URI;
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.core.UriBuilder;
@@ -18,8 +23,13 @@ import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +40,7 @@ import utils.EMF_Creator;
  * @author Tweny
  */
 public class PersonResourceTest {
-    
+
     private static final int SERVER_PORT = 7777;
     private static final String SERVER_URL = "http://localhost/api";
     private static Person person1, person2;
@@ -71,8 +81,8 @@ public class PersonResourceTest {
     @BeforeEach
     public void setUp() {
         EntityManager em = emf.createEntityManager();
-        person1 = new Person("First 1", "Last 1", "11111111"); 
-        person2 = new Person("First 2", "Last 2", "22222222"); 
+        person1 = new Person("First 1", "Last 1", "11111111");
+        person2 = new Person("First 2", "Last 2", "22222222");
         try {
             em.getTransaction().begin();
             em.createNamedQuery("Person.deleteAllRows").executeUpdate();
@@ -101,14 +111,219 @@ public class PersonResourceTest {
                 .body("msg", equalTo("Hello World"));
     }
 
-//    @Test
-//    public void testCount() throws Exception {
-//        given()
-//                .contentType("application/json")
-//                .get("/xxx/count").then()
-//                .assertThat()
-//                .statusCode(HttpStatus.OK_200.getStatusCode())
-//                .body("count", equalTo(2));
-//    }
+    @Test
+    public void doThisWhenYouHaveProblems() {
+        given().log().all().when().get("/person/all").then().log().body();
+    }
+
+    @Test
+    public void testAll() {
+        given()
+                .contentType("application/json")
+                .get("/person/all").then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body("firstName", hasItems("First 1", "First 2"));
+    }
+
+    @Test
+    public void testById1() {
+        given().log().all().when().get("/person/id/{id}", person1.getId()).then().log().body();
+
+        given()
+                .contentType("application/json")
+                .get("/person/id/{id}", person1.getId()).then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body("firstName", equalTo("First 1"));
+    }
+
+    @Test
+    public void testById2() {
+        given().log().all().when().get("/person/id/" + person2.getId()).then().log().body();
+
+        given()
+                .contentType("application/json")
+                .get("/person/id/" + person2.getId()).then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body("lastName", equalTo(person2.getLast_name()));
+    }
+
+    //@Test
+    public void testByTitle() {
+        given().log().all().when().get("/person/bllbla/{title}", "a").then().log().body();
+
+        given()
+                .contentType("application/json")
+                .get("/person/blabla/{title}", "a").then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body("title", hasItems(person1.getPhone()));
+    }
+
+    @Test
+    public void testAllSize1() {
+        given()
+                .contentType("application/json")
+                .get("/person/all").then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body("$", hasSize(2));
+    }
+
+    @Test
+    public void testAllSize2() {
+        given()
+                .contentType("application/json")
+                .get("/person/all").then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body("", hasSize(2));
+    }
+
+    @Test
+    public void testAllSize3() {
+        given()
+                .contentType("application/json")
+                .get("/person/all").then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body("size()", equalTo(2));
+    }
+
+    @Test
+    public void testAllSize4() {
+        given()
+                .contentType("application/json")
+                .get("/person/all").then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body("size()", equalTo(2))
+                .body("", hasSize(2))
+                .body("$", hasSize(2));
+        ;
+    }
+
+    //For at denne test kan virke, så skal man lave en equals i i DTO klassen
+    @Test
+    /* Observe: You must override the equals method for MovieDTO for this to work */
+    void testGetAllV2() {
+        List<PersonDTO> personDTOs;
+        personDTOs = given()
+                .contentType("application/json")
+                .when()
+                .get("/person/all")
+                .then()
+                .extract().body().jsonPath().getList(".", PersonDTO.class);
+
+        PersonDTO m1DTO = new PersonDTO(person1);
+        PersonDTO m2DTO = new PersonDTO(person2);
+
+        assertThat(personDTOs, containsInAnyOrder(m1DTO, m2DTO));
+    }
+
+    //******* POST *******
+    @Test
+    public void testPOSTrequest1() {
+        String requestBody = "{\n"
+                + "  \"firstName\": \"test1\",\n"
+                + "  \"lastName\": \"teest1\",\n"
+                + "  \"phone\": \"223344\" \n}";
+
+        Response response = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(requestBody)
+                .when()
+                .post("/person/post-dbtest")
+                .then()
+                .extract().response();
+
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals("test1", response.jsonPath().getString("firstName"));
+        Assertions.assertEquals("teest1", response.jsonPath().getString("lastName"));
+        Assertions.assertEquals("223344", response.jsonPath().getString("phone"));
+    }
+
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    @Test
+    public void testPOSTrequest2() {
+        PersonDTO personDTO = new PersonDTO("Arik", "Twena", "777");
+        String requestBody = GSON.toJson(personDTO);
+
+        Response response = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(requestBody)
+                .when()
+                .post("/person/post-dbtest")
+                .then()
+                .extract().response();
+
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals("Arik", response.jsonPath().getString("firstName"));
+        Assertions.assertEquals("Twena", response.jsonPath().getString("lastName"));
+        Assertions.assertEquals("777", response.jsonPath().getString("phone"));
+    }
+
+    @Test
+    public void testPOSTrequest3() {
+        PersonDTO personDTO = new PersonDTO("Bente", "Gaarde", "888");
+        String requestBody = GSON.toJson(personDTO);
+
+        given()
+                .contentType("application/json")
+                .and()
+                .body(requestBody)
+                .when()
+                .post("/person/post-dbtest")
+                .then()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .and()
+                .body("firstName", equalTo("Bente"),
+                        "lastName", equalTo("Gaarde"),
+                        "phone", equalTo("888"))
+        ;
+    }
     
+    //******* PUT *******
+    @Test
+    public void testPUTrequest() {
+        PersonDTO personDTOEditInfo = new PersonDTO("ChangedName", "ChangedLast", "888");
+        Person personToEdit = new Person(person1.getId(), personDTOEditInfo.getFirstName(), personDTOEditInfo.getLastName(), personDTOEditInfo.getPhone());
+        PersonDTO personDTO = new PersonDTO(personToEdit);
+        String requestBody = GSON.toJson(personDTO);
+        
+        given()
+                .contentType("application/json")
+                .and()
+                .body(requestBody)
+                .when()
+                .put("/person/change/{id}", person1.getId())
+                .then()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .and()
+                .body("firstName", equalTo("ChangedName"),
+                        "lastName", equalTo("ChangedLast"),
+                        "phone", equalTo("888"),
+                        "id", equalTo(person1.getId()))
+        ;
+        
+    }
+    
+    //******* DELETE *******
+    @Test
+    public void testDELETErequest() {
+        given()
+                .contentType("application/json")
+                .when()
+                .delete("/person/delete/{id}", person1.getId())
+                .then()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .and()
+                .body("status", equalTo("removed"))
+        ;
+    }
 }

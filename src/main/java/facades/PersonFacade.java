@@ -106,12 +106,12 @@ public class PersonFacade implements IPersonFacade {
         try {
             em.getTransaction().begin();
             Query query = em.createQuery("UPDATE Person person SET person.first_name = :fName, person.last_name"
-                    + " = :lName, person.phone = :phone, person.lastEdited = :created "
+                    + " = :lName, person.phone = :phone, person.lastEdited = :lastEdited "
                     + "WHERE person.id = :id");
             updateCount = query.setParameter("fName", p.getFirstName())
                     .setParameter("lName", p.getLastName())
                     .setParameter("phone", p.getPhone())
-                    .setParameter("created", new Date())
+                    .setParameter("lastEdited", new Date())
                     .setParameter("id", p.getId())
                     .executeUpdate();
             em.getTransaction().commit();
