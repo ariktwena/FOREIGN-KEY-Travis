@@ -73,4 +73,20 @@ public class PersonFacadeTest {
         assertEquals(2, FACADE.getAllPersons().size(), "Expects two rows in the database");
     }
     
+    @Test
+    public void testEditInfo(){
+        person1.setFirst_name("changed");
+        PersonDTO person1DTO = new PersonDTO(person1);
+        person1DTO = FACADE.editPerson(person1DTO);
+        assertEquals("changed", person1DTO.getFirstName());
+    }
+    
+    @Test
+    public void testDelete(){
+        PersonDTO person1DTO = new PersonDTO(person1);
+        person1DTO = FACADE.deletePerson(person1DTO.getId());
+        assertEquals(1, FACADE.getAllPersons().size(), "Expects 1 rows in the database");
+        assertEquals("First 1", person1DTO.getFirstName(), "First name of deltede: 'First 1'");
+    }
+    
 }

@@ -8,14 +8,8 @@ package rest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dtos.PersonDTO;
-import exceptions.PersonNotDeletedException;
-import exceptions.PersonNotFoundException;
-import exceptions.PersonNotUpdatedException;
-import facades.FacadeExample;
 import facades.PersonFacade;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -58,14 +52,9 @@ public class PersonResource {
     @Path("id/{id}")
     @GET
     @Produces({MediaType.APPLICATION_JSON})
-    public String getCarById(@PathParam("id") int id) {
-        try {
-            PersonDTO personDTO = FACADE.getPerson(id);
-            return GSON.toJson(personDTO);
-        } catch (PersonNotFoundException ex) {
-            Logger.getLogger(PersonResource.class.getName()).log(Level.SEVERE, null, ex);
-            return "{\"status\": \"Person not found :(\"}";
-        }  
+    public String getPersonById(@PathParam("id") int id) {
+        PersonDTO personDTO = FACADE.getPerson(id);
+        return GSON.toJson(personDTO);
     }
 
     /**
@@ -82,8 +71,9 @@ public class PersonResource {
 
     /**
      * Post produce
+     *
      * @param person
-     * @return 
+     * @return
      */
     @Path("post-dbtest")
     @POST
@@ -95,47 +85,34 @@ public class PersonResource {
         personDTO = FACADE.addPerson(personDTO.getFirstName(), personDTO.getLastName(), personDTO.getPhone());
         return Response.ok(personDTO).build();
     }
-    
+
     /**
      * Put
+     *
      * @param person
-     * @return 
+     * @return
      * @throws exceptions.PersonNotUpdatedException
      */
     @Path("change/{id}")
     @PUT
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response editPerson(String person) {
         //System.out.println(person);
         PersonDTO personDTO = GSON.fromJson(person, PersonDTO.class); //manual conversion
-        try {
-            personDTO = FACADE.editPerson(personDTO);
-            return Response.ok(personDTO).build();
-        } catch (PersonNotUpdatedException ex) {
-            //Logger.getLogger(PersonResource.class.getName()).log(Level.SEVERE, null, ex);
-            return Response.notModified().build();
-        }
-        
+        personDTO = FACADE.editPerson(personDTO);
+        return Response.ok(personDTO).build();
     }
-    
-    
+
     /**
      * Delete
      */
     @Path("delete/{id}")
     @DELETE
-    public String deleteCar(@PathParam("id") int id){
-        try {
-            PersonDTO personDTO = FACADE.deletePerson(id);
-            System.out.println(personDTO);
-            return "{\"status\": \"removed\"}";
-        } catch (PersonNotDeletedException ex) {
-            //Logger.getLogger(PersonResource.class.getName()).log(Level.SEVERE, null, ex);
-            return "{\"status\": \"Not removed :(\"}";
-        }catch (PersonNotFoundException ex) {
-            //Logger.getLogger(PersonResource.class.getName()).log(Level.SEVERE, null, ex);
-            return "{\"status\": \"Person not found :(\"}";
-        }
+    @Produces(MediaType.APPLICATION_JSON)
+    public String deleteCar(@PathParam("id") int id) {
+        PersonDTO personDTO = FACADE.deletePerson(id);
+        System.out.println(personDTO);
+        return "{\"status\": \"removed\"}";
     }
 }
