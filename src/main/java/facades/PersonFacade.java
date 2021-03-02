@@ -6,12 +6,9 @@
 package facades;
 
 import dtos.PersonDTO;
-import dtos.RenameMeDTO;
 import entities.Person;
-import entities.RenameMe;
-import exceptions.PersonNotDeletedException;
+import exceptions.MissingInputException;
 import exceptions.PersonNotFoundException;
-import exceptions.PersonNotUpdatedException;
 import interfaces.IPersonFacade;
 import java.util.Date;
 import java.util.List;
@@ -51,57 +48,82 @@ public class PersonFacade implements IPersonFacade {
     }
 
     @Override
-    public PersonDTO addPerson(String fName, String lName, String phone) {
-        Person person = new Person(fName, lName, phone);
+    public PersonDTO addPerson(String fName, String lName, String phone) throws PersonNotFoundException, MissingInputException {
         EntityManager em = emf.createEntityManager();
+        if(fName == null || lName ==null){
+            throw new MissingInputException("{\"code\": 500, \"message\": \"First Name and/or Last Name is missing\"}");
+        }
         try {
+            Person person = new Person(fName, lName, phone);
             em.getTransaction().begin();
             em.persist(person);
             em.getTransaction().commit();
+            return new PersonDTO(person);
+        } catch (RuntimeException ex) {
+            throw new PersonNotFoundException("{\"code\": 500, \"message\": \"Internal Server Problem. We are sorry for the inconvenience\"}");
         } finally {
             em.close();
-        }
-        return new PersonDTO(person);
+        }  
     }
 
     @Override
-    public PersonDTO deletePerson(int id) {
+    public PersonDTO deletePerson(int id) throws PersonNotFoundException {
         int rowCount;
         EntityManager em = emf.createEntityManager();
-        PersonDTO personDTO = getPerson(id);
         try {
+            PersonDTO personDTO = new PersonDTO(em.find(Person.class, id));
             em.getTransaction().begin();
-            Query query = em.createQuery("DELETE FROM Person person WHERE person.id = :personDTO").setParameter("personDTO", personDTO.getId());
+            Query query = em.createQuery("DELETE FROM Person person WHERE person.id = :id").setParameter("id", personDTO.getId());
             rowCount = query.executeUpdate();
             em.getTransaction().commit();
+            if (rowCount == 1) {
+                return personDTO;
+            } else {
+                return null;
+            }
+        } catch (NullPointerException ex) {
+            throw new PersonNotFoundException("{\"code\": 404, \"message\": \"Could not delete, provided id does not exist\"}");
+        } catch (RuntimeException ex) {
+            throw new PersonNotFoundException("{\"code\": 500, \"message\": \"Internal Server Problem. We are sorry for the inconvenience\"}");
         } finally {
             em.close();
         }
-        if (rowCount == 1) {
+    }
+
+    @Override
+    public PersonDTO getPerson(int id) throws PersonNotFoundException {
+        EntityManager em = emf.createEntityManager();
+        try {
+            PersonDTO personDTO = new PersonDTO(em.find(Person.class, id));
             return personDTO;
-        } else {
-            return null;
+        } catch (NullPointerException ex) {
+            throw new PersonNotFoundException("{\"code\": 404, \"message\": \"No person with provided id found\"}");
+        } finally {
+            em.close();
         }
     }
 
     @Override
-    public PersonDTO getPerson(int id) {
+    public List<PersonDTO> getAllPersons() throws PersonNotFoundException {
         EntityManager em = emf.createEntityManager();
-        return new PersonDTO(em.find(Person.class, id));
+        try {
+            TypedQuery<Person> query = em.createQuery("SELECT person FROM Person person", Person.class);
+            List<Person> persons = query.getResultList();
+            System.out.println(persons.size());
+            return PersonDTO.convertPersonsTopersonDTOs(persons);
+        } catch (RuntimeException ex) {
+            throw new PersonNotFoundException("{\"code\": 500, \"message\": \"Internal Server Problem. We are sorry for the inconvenience\"}");
+        } finally {
+            em.close();
+        }
     }
 
     @Override
-    public List<PersonDTO> getAllPersons() {
-        EntityManager em = emf.createEntityManager();
-        TypedQuery<Person> query = em.createQuery("SELECT person FROM Person person", Person.class);
-        List<Person> persons = query.getResultList();
-        System.out.println(persons.size());
-        return PersonDTO.convertPersonsTopersonDTOs(persons);
-    }
-
-    @Override
-    public PersonDTO editPerson(PersonDTO p) {
+    public PersonDTO editPerson(PersonDTO p) throws PersonNotFoundException, MissingInputException{
         int updateCount;
+        if(p.getFirstName() == null || p.getLastName() ==null){
+            throw new MissingInputException("{\"code\": 500, \"message\": \"First Name and/or Last Name is missing\"}");
+        }
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
@@ -115,14 +137,18 @@ public class PersonFacade implements IPersonFacade {
                     .setParameter("id", p.getId())
                     .executeUpdate();
             em.getTransaction().commit();
+
+            if (updateCount == 1) {
+                return p;
+            } else {
+                return null;
+            }
+        } catch (RuntimeException ex) {
+            throw new PersonNotFoundException("{\"code\": 500, \"message\": \"Internal Server Problem. We are sorry for the inconvenience\"}");
         } finally {
             em.close();
         }
-        if (updateCount == 1) {
-            return p;
-        } else {
-            return null;
-        }
+
     }
 
 }

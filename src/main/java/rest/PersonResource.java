@@ -9,8 +9,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dtos.PersonDTO;
 import entities.Person;
+import exceptions.MissingInputException;
+import exceptions.PersonNotFoundException;
 import facades.PersonFacade;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -46,16 +50,24 @@ public class PersonResource {
     @GET
     @Produces({MediaType.APPLICATION_JSON})
     public String getAllCars() {
+        try {
         List<PersonDTO> personDTOs = FACADE.getAllPersons();
         return GSON.toJson(personDTOs);
+        } catch(PersonNotFoundException ex){
+            return ex.getMessage();
+        }
     }
 
     @Path("id/{id}")
     @GET
     @Produces({MediaType.APPLICATION_JSON})
-    public String getPersonById(@PathParam("id") int id) {
-        PersonDTO personDTO = FACADE.getPerson(id);
-        return GSON.toJson(personDTO);
+    public String getPersonById(@PathParam("id") int id){
+        try {
+            PersonDTO personDTO = FACADE.getPerson(id);
+            return GSON.toJson(personDTO);
+        } catch(PersonNotFoundException ex){
+            return ex.getMessage();
+        }
     }
 
     /**
@@ -81,10 +93,16 @@ public class PersonResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response savePerson(String person) {
+        try{
         //System.out.println(person);
         PersonDTO personDTO = GSON.fromJson(person, PersonDTO.class); //manual conversion
         personDTO = FACADE.addPerson(personDTO.getFirstName(), personDTO.getLastName(), personDTO.getPhone());
         return Response.ok(personDTO).build();
+        } catch(PersonNotFoundException ex){
+            return Response.ok(ex.getMessage()).build();
+        } catch(MissingInputException ex){
+            return Response.ok(ex.getMessage()).build();
+        }
     }
 
     /**
@@ -99,12 +117,18 @@ public class PersonResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response editPerson(@PathParam("id") int id, String person) {
+        try{
         //System.out.println(person);
         PersonDTO personDTOEditInfo = GSON.fromJson(person, PersonDTO.class); //manual conversion
         Person personToEdit = new Person(id, personDTOEditInfo.getFirstName(), personDTOEditInfo.getLastName(), personDTOEditInfo.getPhone());
         PersonDTO personDTO = new PersonDTO(personToEdit);
         personDTO = FACADE.editPerson(personDTO);
         return Response.ok(personDTO).build();
+        } catch(PersonNotFoundException ex){
+            return Response.ok(ex.getMessage()).build();
+        } catch(MissingInputException ex){
+            return Response.ok(ex.getMessage()).build();
+        }
     }
 
     /**
@@ -113,9 +137,14 @@ public class PersonResource {
     @Path("delete/{id}")
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
-    public String deleteCar(@PathParam("id") int id) {
-        PersonDTO personDTO = FACADE.deletePerson(id);
-        System.out.println(personDTO);
-        return "{\"status\": \"removed\"}";
+    public String deleteCar(@PathParam("id") int id){
+        try {
+            PersonDTO personDTO = FACADE.deletePerson(id);
+            System.out.println(personDTO);
+            return "{\"status\": \"removed\"}";
+        } catch(PersonNotFoundException ex){
+            return ex.getMessage();
+        }
+
     }
 }

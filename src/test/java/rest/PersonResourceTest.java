@@ -284,18 +284,17 @@ public class PersonResourceTest {
                 .and()
                 .body("firstName", equalTo("Bente"),
                         "lastName", equalTo("Gaarde"),
-                        "phone", equalTo("888"))
-        ;
+                        "phone", equalTo("888"));
     }
-    
+
     //******* PUT *******
     @Test
-    public void testPUTrequest() {
+    public void testPUTrequest1() {
         PersonDTO personDTOEditInfo = new PersonDTO("ChangedName", "ChangedLast", "888");
         Person personToEdit = new Person(person1.getId(), personDTOEditInfo.getFirstName(), personDTOEditInfo.getLastName(), personDTOEditInfo.getPhone());
         PersonDTO personDTO = new PersonDTO(personToEdit);
         String requestBody = GSON.toJson(personDTO);
-        
+
         given()
                 .contentType("application/json")
                 .and()
@@ -308,14 +307,13 @@ public class PersonResourceTest {
                 .body("firstName", equalTo("ChangedName"),
                         "lastName", equalTo("ChangedLast"),
                         "phone", equalTo("888"),
-                        "id", equalTo(person1.getId()))
-        ;
-        
+                        "id", equalTo(person1.getId()));
+
     }
-    
+
     //******* DELETE *******
     @Test
-    public void testDELETErequest() {
+    public void testDELETErequest1() {
         given()
                 .contentType("application/json")
                 .when()
@@ -323,7 +321,101 @@ public class PersonResourceTest {
                 .then()
                 .statusCode(HttpStatus.OK_200.getStatusCode())
                 .and()
-                .body("status", equalTo("removed"))
-        ;
+                .body("status", equalTo("removed"));
     }
+
+    //***** ERROR ****
+//    @Test
+//    public void testError() {
+//
+//        //given().log().all().when().get("/person/id/" + "abc").then().log().body();
+//
+//        given()
+//                .contentType("application/json")
+//                .get("/person/id/" + "abc")
+//                .then()
+//                .assertThat()
+//                .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode())
+//                .body("message", equalTo("No person with provided id found"));
+//    }
+
+    @Test
+    public void testById3Error() {
+        given()
+                .contentType("application/json")
+                .get("/person/id/" + 435345344)
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body("message", equalTo("No person with provided id found"));
+    }
+
+    @Test
+    public void testPOSTrequestError() {
+        String requestBody = "{\n"
+                + "  \"firstName\": \"test1\",\n"
+                + "  \"phone\": \"223344\" \n}";
+
+        given()
+                .contentType("application/json")
+                .and()
+                .body(requestBody)
+                .when()
+                .post("/person/post-dbtest")
+                .then()
+                .log()
+                .body();
+
+        given()
+                .contentType("application/json")
+                .and()
+                .body(requestBody)
+                .when()
+                .post("/person/post-dbtest")
+                .then()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .and()
+                .body("message", equalTo("First Name and/or Last Name is missing"));
+    }
+
+    @Test
+    public void testPUTrequestError() {
+        String requestBody = "{\n"
+                + "  \"firstName\": \"test1\",\n"
+                + "  \"phone\": \"223344\" \n}";
+
+        given()
+                .contentType("application/json")
+                .and()
+                .body(requestBody)
+                .when()
+                .put("/person/change/{id}", person1.getId())
+                .then()
+                .log()
+                .body();
+
+        given()
+                .contentType("application/json")
+                .and()
+                .body(requestBody)
+                .when()
+                .put("/person/change/{id}", person1.getId())
+                .then()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .and()
+                .body("message", equalTo("First Name and/or Last Name is missing"));
+    }
+
+    @Test
+    public void testDELETErequestError() {
+        given()
+                .contentType("application/json")
+                .when()
+                .delete("/person/delete/{id}", 435345)
+                .then()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .and()
+                .body("message", equalTo("Could not delete, provided id does not exist"));
+    }
+
 }

@@ -3,14 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package exceptions;
+package dtos;
 
 /**
  *
  * @author Tweny
  */
-public class PersonNotFoundException extends Exception {
-    public PersonNotFoundException(String message) {
-        super(message);
+public class ExceptionDTO {
+
+    public ExceptionDTO(int code, String description) {
+        this.code = code;
+        this.message = description;
     }
+    private int code;
+    private String message;
+
 }

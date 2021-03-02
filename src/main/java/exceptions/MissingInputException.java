@@ -9,6 +9,8 @@ package exceptions;
  *
  * @author Tweny
  */
-public class PersonNotUpdatedException extends Exception {
-    
+public class MissingInputException extends Exception {
+    public MissingInputException (String message) {
+        super(message);
+    }
 }

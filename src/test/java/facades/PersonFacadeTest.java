@@ -8,6 +8,10 @@ package facades;
 import dtos.PersonDTO;
 import entities.Person;
 import entities.RenameMe;
+import exceptions.MissingInputException;
+import exceptions.PersonNotFoundException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.AfterAll;
@@ -69,22 +73,40 @@ public class PersonFacadeTest {
     // TODO: Delete or change this method 
     @Test
     public void testDBSize() {
-        assertEquals(2, FACADE.getAllPersons().size(), "Expects two rows in the database");
+        try {
+            assertEquals(2, FACADE.getAllPersons().size(), "Expects two rows in the database");
+        } catch (PersonNotFoundException ex) {
+            //Logger.getLogger(PersonFacadeTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     @Test
     public void testEditInfo(){
         person1.setFirst_name("changed");
         PersonDTO person1DTO = new PersonDTO(person1);
-        person1DTO = FACADE.editPerson(person1DTO);
+        try {
+            person1DTO = FACADE.editPerson(person1DTO);
+        } catch (PersonNotFoundException ex) {
+            //Logger.getLogger(PersonFacadeTest.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MissingInputException ex) {
+            //Logger.getLogger(PersonFacadeTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
         assertEquals("changed", person1DTO.getFirstName());
     }
     
     @Test
     public void testDelete(){
         PersonDTO person1DTO = new PersonDTO(person1);
-        person1DTO = FACADE.deletePerson(person1DTO.getId());
-        assertEquals(1, FACADE.getAllPersons().size(), "Expects 1 rows in the database");
+        try {
+            person1DTO = FACADE.deletePerson(person1DTO.getId());
+        } catch (PersonNotFoundException ex) {
+            //Logger.getLogger(PersonFacadeTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            assertEquals(1, FACADE.getAllPersons().size(), "Expects 1 rows in the database");
+        } catch (PersonNotFoundException ex) {
+            //Logger.getLogger(PersonFacadeTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
         assertEquals("First 1", person1DTO.getFirstName(), "First name of deltede: 'First 1'");
     }
     
