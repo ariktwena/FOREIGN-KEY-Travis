@@ -9,6 +9,7 @@ import dtos.PersonDTO;
 import entities.Person;
 import exceptions.MissingInputException;
 import exceptions.PersonNotFoundException;
+import exceptions.PersonNotFoundExceptionMapper;
 import interfaces.IPersonFacade;
 import java.util.Date;
 import java.util.List;
@@ -91,13 +92,15 @@ public class PersonFacade implements IPersonFacade {
     }
 
     @Override
-    public PersonDTO getPerson(int id) throws PersonNotFoundException {
+    public PersonDTO getPerson(int id) throws PersonNotFoundException, RuntimeException {
         EntityManager em = emf.createEntityManager();
         try {
             PersonDTO personDTO = new PersonDTO(em.find(Person.class, id));
             return personDTO;
         } catch (NullPointerException ex) {
             throw new PersonNotFoundException("{\"code\": 404, \"message\": \"No person with provided id found\"}");
+        } catch (RuntimeException ex) {
+            throw new PersonNotFoundException("{\"code\": 500, \"message\": \"Internal Server Problem. We are sorry for the inconvenience\"}");
         } finally {
             em.close();
         }

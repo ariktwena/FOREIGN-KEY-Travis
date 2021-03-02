@@ -9,8 +9,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dtos.PersonDTO;
 import entities.Person;
+import exceptions.GenericExceptionMapper;
 import exceptions.MissingInputException;
 import exceptions.PersonNotFoundException;
+import exceptions.PersonNotFoundExceptionMapper;
 import facades.PersonFacade;
 import java.util.List;
 import java.util.logging.Level;
@@ -58,6 +60,8 @@ public class PersonResource {
         }
     }
 
+                
+    
     @Path("id/{id}")
     @GET
     @Produces({MediaType.APPLICATION_JSON})
@@ -67,6 +71,40 @@ public class PersonResource {
             return GSON.toJson(personDTO);
         } catch(PersonNotFoundException ex){
             return ex.getMessage();
+        }
+    }
+    
+    /**
+     * Using PersonNotFoundExceptionMapper!!!!
+     * @param id
+     * @return 
+     */
+    @Path("id2/{id}")
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getPersonById1(@PathParam("id") int id){
+        try {
+            PersonDTO personDTO = FACADE.getPerson(id);
+            return Response.ok(personDTO).build();
+        } catch(PersonNotFoundException ex){
+            return new PersonNotFoundExceptionMapper().toResponse(ex);
+        }
+    }
+    
+     /**
+     * Using GenericExceptionMapper!!!!
+     * @param id
+     * @return 
+     */
+    @Path("id3/{id}")
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getPersonById2(@PathParam("id") int id){
+        try {
+            PersonDTO personDTO = FACADE.getPerson(id);
+            return Response.ok(personDTO).build();
+        } catch(PersonNotFoundException ex){
+            return new GenericExceptionMapper().toResponse(ex);
         }
     }
 

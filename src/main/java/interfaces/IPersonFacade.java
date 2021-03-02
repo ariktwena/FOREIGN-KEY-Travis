@@ -20,7 +20,7 @@ public interface IPersonFacade {
 
     public PersonDTO deletePerson(int id) throws PersonNotFoundException;
 
-    public PersonDTO getPerson(int id) throws PersonNotFoundException;
+    public PersonDTO getPerson(int id) throws PersonNotFoundException, RuntimeException;
 
     public List<PersonDTO> getAllPersons() throws PersonNotFoundException;
 
