@@ -70,6 +70,8 @@ public class Fee implements Serializable {
         return payDate;
     }
 
+    
+    
 //    @Override
 //    public String toString() {
 //        return "Fee{" + "id=" + id + ", amount=" + amount + ", payDate=" + payDate + ", person=" + person + '}';
@@ -80,5 +82,13 @@ public class Fee implements Serializable {
 //        return "Fee{" + "id=" + id + ", amount=" + amount +   '}';
 //    }
 
+    @Override
+    public String toString() {
+        return "Fee{" + "id=" + id + ", amount=" + amount + ", payDate=" + payDate + ", person=" + personInfo(person) + '}';
+    }
+
+    private String personInfo(Person person){
+        return person != null?person.getFirst_name():"Person not set jet";
+    }
     
 }
