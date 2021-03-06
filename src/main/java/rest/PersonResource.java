@@ -8,6 +8,7 @@ package rest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dtos.PersonDTO;
+import dtos.PersonsDTO;
 import entities.Person;
 import exceptions.GenericExceptionMapper;
 import exceptions.MissingInputException;
@@ -51,61 +52,83 @@ public class PersonResource {
     @Path("all")
     @GET
     @Produces({MediaType.APPLICATION_JSON})
-    public String getAllCars() {
+    public String getAllPersons() {
         try {
-        List<PersonDTO> personDTOs = FACADE.getAllPersons();
-        return GSON.toJson(personDTOs);
-        } catch(PersonNotFoundException ex){
+            List<PersonDTO> personDTOs = FACADE.getAllPersons();
+            return GSON.toJson(personDTOs);
+        } catch (PersonNotFoundException ex) {
             return ex.getMessage();
         }
     }
 
-                
-    
+    @Path("alldto")
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    public String getAllPersonsDTO() {
+        List<Person> persons = FACADE.getAllPersonsAssDTOAll();
+        return GSON.toJson(new PersonsDTO(persons));
+    }
+
     @Path("id/{id}")
     @GET
     @Produces({MediaType.APPLICATION_JSON})
-    public String getPersonById(@PathParam("id") int id){
+    public String getPersonById(@PathParam("id") int id) {
         try {
             PersonDTO personDTO = FACADE.getPerson(id);
             return GSON.toJson(personDTO);
-        } catch(PersonNotFoundException ex){
+        } catch (PersonNotFoundException ex) {
             return ex.getMessage();
         }
     }
-    
+
     /**
      * Using PersonNotFoundExceptionMapper!!!!
+     *
      * @param id
-     * @return 
+     * @return
      */
     @Path("id2/{id}")
     @GET
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getPersonById1(@PathParam("id") int id){
+    public Response getPersonById1(@PathParam("id") int id) {
         try {
             PersonDTO personDTO = FACADE.getPerson(id);
             return Response.ok(personDTO).build();
-        } catch(PersonNotFoundException ex){
+        } catch (PersonNotFoundException ex) {
             return new PersonNotFoundExceptionMapper().toResponse(ex);
         }
     }
-    
-     /**
+
+    /**
      * Using GenericExceptionMapper!!!!
+     *
      * @param id
-     * @return 
+     * @return
      */
     @Path("id3/{id}")
     @GET
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getPersonById2(@PathParam("id") int id){
+    public Response getPersonById2(@PathParam("id") int id) {
         try {
             PersonDTO personDTO = FACADE.getPerson(id);
             return Response.ok(personDTO).build();
-        } catch(PersonNotFoundException ex){
+        } catch (PersonNotFoundException ex) {
             return new GenericExceptionMapper().toResponse(ex);
         }
+    }
+
+    /**
+     * ALTERNATIV BRUGE EXCEPTIONS PÅ!!!!
+     *
+     * @param id
+     * @return
+     */
+    @Path("id4/{id}")
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getPersonById4(@PathParam("id") int id) throws Exception {
+        PersonDTO personDTO = FACADE.getPersonWithException(id);
+        return Response.ok(personDTO).build();
     }
 
     /**
@@ -131,14 +154,14 @@ public class PersonResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response savePerson(String person) {
-        try{
-        //System.out.println(person);
-        PersonDTO personDTO = GSON.fromJson(person, PersonDTO.class); //manual conversion
-        personDTO = FACADE.addPerson(personDTO.getFirstName(), personDTO.getLastName(), personDTO.getPhone());
-        return Response.ok(personDTO).build();
-        } catch(PersonNotFoundException ex){
+        try {
+            //System.out.println(person);
+            PersonDTO personDTO = GSON.fromJson(person, PersonDTO.class); //manual conversion
+            personDTO = FACADE.addPerson(personDTO.getFirstName(), personDTO.getLastName(), personDTO.getPhone());
+            return Response.ok(personDTO).build();
+        } catch (PersonNotFoundException ex) {
             return Response.ok(ex.getMessage()).build();
-        } catch(MissingInputException ex){
+        } catch (MissingInputException ex) {
             return Response.ok(ex.getMessage()).build();
         }
     }
@@ -155,16 +178,16 @@ public class PersonResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response editPerson(@PathParam("id") int id, String person) {
-        try{
-        //System.out.println(person);
-        PersonDTO personDTOEditInfo = GSON.fromJson(person, PersonDTO.class); //manual conversion
-        Person personToEdit = new Person(id, personDTOEditInfo.getFirstName(), personDTOEditInfo.getLastName(), personDTOEditInfo.getPhone());
-        PersonDTO personDTO = new PersonDTO(personToEdit);
-        personDTO = FACADE.editPerson(personDTO);
-        return Response.ok(personDTO).build();
-        } catch(PersonNotFoundException ex){
+        try {
+            //System.out.println(person);
+            PersonDTO personDTOEditInfo = GSON.fromJson(person, PersonDTO.class); //manual conversion
+            Person personToEdit = new Person(id, personDTOEditInfo.getFirstName(), personDTOEditInfo.getLastName(), personDTOEditInfo.getPhone());
+            PersonDTO personDTO = new PersonDTO(personToEdit);
+            personDTO = FACADE.editPerson(personDTO);
+            return Response.ok(personDTO).build();
+        } catch (PersonNotFoundException ex) {
             return Response.ok(ex.getMessage()).build();
-        } catch(MissingInputException ex){
+        } catch (MissingInputException ex) {
             return Response.ok(ex.getMessage()).build();
         }
     }
@@ -175,12 +198,12 @@ public class PersonResource {
     @Path("delete/{id}")
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
-    public String deleteCar(@PathParam("id") int id){
+    public String deleteCar(@PathParam("id") int id) {
         try {
             PersonDTO personDTO = FACADE.deletePerson(id);
             System.out.println(personDTO);
             return "{\"status\": \"removed\"}";
-        } catch(PersonNotFoundException ex){
+        } catch (PersonNotFoundException ex) {
             return ex.getMessage();
         }
 

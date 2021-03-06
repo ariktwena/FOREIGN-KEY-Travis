@@ -6,6 +6,7 @@
 package facades;
 
 import dtos.PersonDTO;
+import dtos.PersonsDTO;
 import entities.Person;
 import exceptions.MissingInputException;
 import exceptions.PersonNotFoundException;
@@ -98,9 +99,24 @@ public class PersonFacade implements IPersonFacade {
             PersonDTO personDTO = new PersonDTO(em.find(Person.class, id));
             return personDTO;
         } catch (NullPointerException ex) {
-            throw new PersonNotFoundException("{\"code\": 404, \"message\": \"No person with provided id found\"}");
+            throw new PersonNotFoundException(String.format("{\"code\": 404, \"message\": \"No person with provided id: (%d) found\"}", id));
         } catch (RuntimeException ex) {
             throw new PersonNotFoundException("{\"code\": 500, \"message\": \"Internal Server Problem. We are sorry for the inconvenience\"}");
+        } finally {
+            em.close();
+        }
+    }
+    
+    //Den rigtige måde at køre exceptions på
+    public PersonDTO getPersonWithException(int id) throws Exception {
+        EntityManager em = emf.createEntityManager();
+        try {
+            PersonDTO personDTO = new PersonDTO(em.find(Person.class, id));
+            return personDTO;
+        } catch (NullPointerException ex) {
+            throw new Exception(String.format("Person with id: (%d) not found", id));
+        } catch (RuntimeException ex) {
+            throw new Exception("Internal Server Problem. We are sorry for the inconvenience");
         } finally {
             em.close();
         }
@@ -119,6 +135,30 @@ public class PersonFacade implements IPersonFacade {
         } finally {
             em.close();
         }
+    }
+    
+//    public List<PersonDTO> getAllPersonsDTO() throws PersonNotFoundException {
+//        EntityManager em = emf.createEntityManager();
+//        try {
+//            TypedQuery<Person> query = em.createQuery("SELECT person FROM Person person", Person.class);
+//            List<Person> persons = query.getResultList();
+//            System.out.println(persons.size());
+//            PersonsDTO personsDTOlist = new PersonsDTO();
+//            return personsDTOlist.PersonsDTO(persons);
+//        } catch (RuntimeException ex) {
+//            throw new PersonNotFoundException("{\"code\": 500, \"message\": \"Internal Server Problem. We are sorry for the inconvenience\"}");
+//        } finally {
+//            em.close();
+//        }
+//    }
+    
+    public List<Person> getAllPersonsAssDTOAll() {
+      EntityManager em = getEntityManager();
+        try{
+            return em.createNamedQuery("Person.getAllRows").getResultList();
+        }finally{  
+            em.close();
+        }   
     }
 
     @Override
