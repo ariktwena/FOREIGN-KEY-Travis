@@ -86,11 +86,10 @@ public class PersonFacadeTest {
         PersonDTO person1DTO = new PersonDTO(person1);
         try {
             person1DTO = FACADE.editPerson(person1DTO);
-        } catch (PersonNotFoundException ex) {
-            //Logger.getLogger(PersonFacadeTest.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (MissingInputException ex) {
+        } catch (PersonNotFoundException | MissingInputException ex) {
             //Logger.getLogger(PersonFacadeTest.class.getName()).log(Level.SEVERE, null, ex);
         }
+        //Logger.getLogger(PersonFacadeTest.class.getName()).log(Level.SEVERE, null, ex);
         assertEquals("changed", person1DTO.getFirstName());
     }
     

@@ -340,14 +340,27 @@ public class PersonResourceTest {
 //    }
 
     @Test
-    public void testById3Error() {
+    public void testById3Error1() {
+        int id = 435345344;
         given()
                 .contentType("application/json")
-                .get("/person/id/" + 435345344)
+                .get("/person/id/" + id)
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.OK_200.getStatusCode())
-                .body("message", equalTo("No person with provided id found"));
+                .body("message", equalTo(String.format("No person with provided id: (%d) found", id)));
+    }
+    
+    @Test
+    public void testById3Error2() {
+        int id = 435345344;
+        given()
+                .contentType("application/json")
+                .get("/person/id3/" + id)
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode())
+                .body("message", equalTo("Internal Server Error"));
     }
 
     @Test
