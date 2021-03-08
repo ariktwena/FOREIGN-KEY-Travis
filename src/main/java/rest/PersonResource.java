@@ -116,6 +116,7 @@ public class PersonResource {
             return new GenericExceptionMapper().toResponse(ex);
         }
     }
+    
 
     /**
      * ALTERNATIV BRUGE EXCEPTIONS PÅ!!!!
@@ -128,6 +129,20 @@ public class PersonResource {
     @Produces({MediaType.APPLICATION_JSON})
     public Response getPersonById4(@PathParam("id") int id) throws Exception {
         PersonDTO personDTO = FACADE.getPersonWithException(id);
+        return Response.ok(personDTO).build();
+    }
+    
+    /**
+     * ALTERNATIV BRUGE EXCEPTIONS PÅ!!!!
+     *
+     * @param id
+     * @return
+     */
+    @Path("id5/{id}")
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getPersonById5(@PathParam("id") int id) throws Exception{
+        PersonDTO personDTO = FACADE.getPerson1(id);
         return Response.ok(personDTO).build();
     }
 

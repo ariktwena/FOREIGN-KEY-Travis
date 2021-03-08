@@ -107,6 +107,21 @@ public class PersonFacade implements IPersonFacade {
         }
     }
     
+ 
+    public PersonDTO getPerson1(int id) throws Exception {
+        EntityManager em = emf.createEntityManager();
+        try {
+            PersonDTO personDTO = new PersonDTO(em.find(Person.class, id));
+            return personDTO;
+        } catch (NullPointerException ex) {
+            throw new Exception(String.format("{\"code\": 404, \"message\": \"No person with provided id: (%d) found\"}", id));
+        } catch (RuntimeException ex) {
+            throw new Exception("{\"code\": 500, \"message\": \"Internal Server Problem. We are sorry for the inconvenience\"}");
+        } finally {
+            em.close();
+        }
+    }
+    
     //Den rigtige måde at køre exceptions på
     public PersonDTO getPersonWithException(int id) throws Exception {
         EntityManager em = emf.createEntityManager();

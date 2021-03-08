@@ -25,8 +25,8 @@ public class ApplicationConfig extends Application {
         //resources.add(exceptions.GenericExceptionMapper.class); //DENNE SKAL MED MEN FORSVINDER
         resources.add(exceptions.GenericExceptionMapper.class);
         //resources.add(exceptions.PersonNotFoundExceptionMapper.class);
-        resources.add(exceptions.PersonNotFoundExceptionMapper.class);
-        resources.add(org.glassfish.jersey.server.wadl.internal.WadlResource.class); //ECEPTION MAPPER
+        resources.add(exceptions.PersonNotFoundExceptionMapper.class); //EXCEPTION MAPPER
+        resources.add(org.glassfish.jersey.server.wadl.internal.WadlResource.class);
         resources.add(rest.PersonResource.class);
         resources.add(rest.RenameMeResource.class);
     }

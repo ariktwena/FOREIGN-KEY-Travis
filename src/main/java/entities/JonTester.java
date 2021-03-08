@@ -93,9 +93,9 @@ public class JonTester {
     
     
     //SELECT person.first_name, person.last_name, fee.amount FROM Person person JOIN Fee fee
-    //SELECT person.first_name, COUNT(swim) FROM Person person JOIN SwimStyle swim GROUP BY person
-    //SELECT person.first_name FROM Person person JOIN SwimStyle swim WHERE swim.styleName = "Crawl"
-    //SELECT person.first_name FROM Person person JOIN SwimStyle swim WHERE LOWER(swim.styleName) = "crawl"
+    //SELECT person.first_name, COUNT(swim) FROM Person person JOIN person.swimStyles swim GROUP BY person
+    //SELECT person.first_name, swim.styleName FROM Person person JOIN person.swimStyles swim WHERE swim.styleName = "Crawl"
+    //SELECT person.first_name FROM Person person JOIN person.swimStyles swim WHERE LOWER(swim.styleName) = "crawl"
     //SELECT SUM(fee.amount) FROM Fee fee
     //SELECT MAX(fee.amount) FROM Fee fee
     //SELECT MIN(fee.amount) FROM Fee fee
